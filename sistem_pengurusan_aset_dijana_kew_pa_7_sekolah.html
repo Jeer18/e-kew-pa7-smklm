@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pengurusan Aset Alih & Penjana KEW.PA-7 - SMK LUTONG MIRI</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles for Printable KEW.PA-7 Form */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #kewpa7-print-area, #kewpa7-print-area * {
+                visibility: visible;
+            }
+            #kewpa7-print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 10mm 12mm;
+                background: white;
+                color: black;
+                font-family: 'Times New Roman', Times, serif;
+                font-size: 11pt;
+            }
+            .no-print {
+                display: none !important;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 8mm;
+            }
+        }
+
+        .kewpa-table th, .kewpa-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Header -->
+    <header class="bg-slate-900 text-white shadow-md no-print sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-500 p-2 rounded-lg text-white">
+                    <i class="fa-solid fa-boxes-packing text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">e-KEW.PA 7 Sekolah</h1>
+                    <p class="text-xs text-slate-400">Pengurusan Aset & Penjana KEW.PA-7</p>
+                </div>
+            </div>
+
+            <!-- School Info & Actions -->
+            <div class="flex items-center space-x-3">
+                <button onclick="openSchoolModal()" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-700 transition">
+                    <i class="fa-solid fa-school text-brand-400"></i>
+                    <span id="schoolNameHeader">SMK LUTONG MIRI</span>
+                </button>
+                <button onclick="loadSampleData()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1" title="Muat Semula Data Contoh">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span class="hidden md:inline">Data Contoh (PDF)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full no-print">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap gap-2 border-b border-slate-200 mb-6 pb-2">
+            <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center space-x-2 bg-brand-600 text-white shadow-sm">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Papan Pemuka</span>
+            </button>
+            <button onclick="switchTab('rooms')" id="tab-btn-rooms" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center space-x-2 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition">
+                <i class="fa-solid fa-door-open"></i>
+                <span>Senarai Bilik & Kod Lokasi</span>
+            </button>
+            <button onclick="switchTab('assets')" id="tab-btn-assets" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center space-x-2 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition">
+                <i class="fa-solid fa-box text-sm"></i>
+                <span>Pengurusan Aset</span>
+            </button>
+            <button onclick="switchTab('kewpa7')" id="tab-btn-kewpa7" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center space-x-2 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition">
+                <i class="fa-solid fa-file-invoice text-sm"></i>
+                <span>Jana KEW.PA-7</span>
+            </button>
+            <button onclick="switchTab('backup')" id="tab-btn-backup" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center space-x-2 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition">
+                <i class="fa-solid fa-database text-sm"></i>
+                <span>Sandaran Data</span>
+            </button>
+        </div>
+
+        <!-- Tab 1: Dashboard -->
+        <div id="tab-dashboard" class="tab-content space-y-6">
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Jumlah Bilik / Lokasi</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-total-rooms">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-building-user"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Jumlah Rekod Aset</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-total-assets">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Jumlah Kuantiti Aset</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-total-qty">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Bilik Diumpuk Aset</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-active-rooms">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-house-circle-check"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Table by Room -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-brand-600"></i>
+                        Ringkasan Aset Mengikut Bilik & Kod Lokasi
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3">Lokasi / Bilik</th>
+                                <th class="px-4 py-3">Kod Lokasi</th>
+                                <th class="px-4 py-3">Pegawai Disahkan (Lokasi)</th>
+                                <th class="px-4 py-3 text-center">Bil. Item Aset</th>
+                                <th class="px-4 py-3 text-right">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-room-table-body" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Room Management -->
+        <div id="tab-rooms" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">Senarai Bilik & Kod Lokasi</h2>
+                    <p class="text-xs text-slate-500">Uruskan bilik, kod lokasi rasmi, dan pegawai penanggungjawab lokasi</p>
+                </div>
+                <button onclick="openRoomModal()" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Tambah Bilik Baru</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="rooms-grid">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <!-- Tab 3: Asset Management -->
+        <div id="tab-assets" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">Pengurusan Senarai Aset Alih</h2>
+                    <p class="text-xs text-slate-500">Daftar aset alih berserta No Siri Pendaftaran dan Tarikh Penempatan</p>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="text" id="asset-search-input" oninput="renderAssetsTable()" placeholder="Cari aset / no siri..." class="w-full sm:w-64 px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <button onclick="openAssetModal()" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow transition whitespace-nowrap flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Tambah Aset</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Asset Filter by Room -->
+            <div class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 text-xs">
+                <span class="font-semibold text-slate-700 whitespace-nowrap"><i class="fa-solid fa-filter text-slate-400 mr-1"></i> Tapis Bilik:</span>
+                <select id="asset-room-filter" onchange="renderAssetsTable()" class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none w-full sm:w-64">
+                    <option value="">-- Semua Bilik --</option>
+                </select>
+            </div>
+
+            <!-- Assets Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3">Bil.</th>
+                                <th class="px-4 py-3">No Siri Pendaftaran</th>
+                                <th class="px-4 py-3">Keterangan Aset</th>
+                                <th class="px-4 py-3">Lokasi / Bilik</th>
+                                <th class="px-4 py-3 text-center">Tarikh Penempatan</th>
+                                <th class="px-4 py-3 text-right">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assets-table-body" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: KEW.PA-7 Form Generator -->
+        <div id="tab-kewpa7" class="tab-content hidden space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <label class="text-sm font-bold text-slate-700 whitespace-nowrap">Pilih Bilik / Lokasi:</label>
+                    <select id="kewpa-room-select" onchange="generateKEWPA7Preview()" class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none min-w-[240px]">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="window.print()" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-print text-sm"></i>
+                        <span>Cetak KEW.PA-7 / Simpan PDF</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KEW.PA-7 Live Screen Preview Container -->
+            <div class="bg-slate-200 p-4 sm:p-8 rounded-xl overflow-x-auto flex justify-center">
+                <div id="kewpa7-preview-container" class="bg-white p-8 sm:p-12 rounded shadow-md border border-slate-300 w-full max-w-[850px] min-w-[700px] text-slate-900 font-serif text-sm">
+                    <!-- Dynamic KEW.PA-7 HTML rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 5: Data Backup / Import / Export -->
+        <div id="tab-backup" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">Sandaran & Pengurusan Data</h2>
+                    <p class="text-xs text-slate-500">Eksport atau muat naik data untuk dipindahkan ke komputer lain</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Export JSON -->
+                    <div class="border border-slate-200 p-5 rounded-xl bg-slate-50 space-y-3">
+                        <div class="flex items-center space-x-3 text-brand-700 font-bold">
+                            <i class="fa-solid fa-file-export text-xl"></i>
+                            <h3>Eksport Data (JSON)</h3>
+                        </div>
+                        <p class="text-xs text-slate-600">Muat turun semua maklumat bilik, aset, dan tetapan sekolah sebagai fail sandaran JSON.</p>
+                        <button onclick="exportDataJSON()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Muat Turun Sandaran Data</span>
+                        </button>
+                    </div>
+
+                    <!-- Import JSON -->
+                    <div class="border border-slate-200 p-5 rounded-xl bg-slate-50 space-y-3">
+                        <div class="flex items-center space-x-3 text-emerald-700 font-bold">
+                            <i class="fa-solid fa-file-import text-xl"></i>
+                            <h3>Import Data (JSON)</h3>
+                        </div>
+                        <p class="text-xs text-slate-600">Muat naik fail sandaran JSON yang telah disimpan sebelum ini.</p>
+                        <input type="file" id="import-json-file" accept=".json" class="hidden" onchange="importDataJSON(event)">
+                        <button onclick="document.getElementById('import-json-file').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>Muat Naik Fail Sandaran</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reset Data -->
+                <div class="border border-rose-200 p-5 rounded-xl bg-rose-50/50 space-y-3 mt-6">
+                    <div class="flex items-center space-x-3 text-rose-700 font-bold">
+                        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                        <h3>Set Semula Semua Data</h3>
+                    </div>
+                    <p class="text-xs text-slate-600">Padamkan semua maklumat bilik dan aset dalam perisian ini.</p>
+                    <button onclick="clearAllData()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Kosongkan Semua Data</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Dedicated Print Container -->
+    <div id="kewpa7-print-area">
+        <!-- Rendered purely for printing -->
+    </div>
+
+    <!-- Room Modal -->
+    <div id="room-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div class="p-5 bg-slate-900 text-white flex justify-between items-center">
+                <h3 class="font-bold text-base" id="room-modal-title">Tambah Bilik / Lokasi</h3>
+                <button onclick="closeRoomModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="room-form" onsubmit="saveRoom(event)" class="p-6 space-y-4">
+                <input type="hidden" id="room-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lokasi / Bilik <span class="text-rose-500">*</span></label>
+                    <input type="text" id="room-name" required placeholder="Cth: BILIK PENGETUA" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none uppercase">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Kod Lokasi Rasmi</label>
+                    <input type="text" id="room-code" placeholder="Cth: 131409/BGN/NX/01/010" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Bangunan / Aras (Pilihan)</label>
+                    <input type="text" id="room-building" placeholder="Cth: Blok Pentadbiran, Aras 1" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div class="pt-2 border-t border-slate-100">
+                    <p class="text-xs font-bold text-slate-800 mb-2">Pegawai Disahkan (Bertanggungjawab ke atas Lokasi):</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pegawai <span class="text-rose-500">*</span></label>
+                            <input type="text" id="room-officer-name" required placeholder="Cth: CECILLIA JAU" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none uppercase">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Jawatan Pegawai</label>
+                            <input type="text" id="room-officer-title" placeholder="Cth: PEMBANTU MAKMAL / PENGETUA" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none uppercase">
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4 flex justify-end gap-2">
+                    <button type="button" onclick="closeRoomModal()" class="px-4 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Asset Modal -->
+    <div id="asset-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="p-5 bg-slate-900 text-white flex justify-between items-center shrink-0">
+                <h3 class="font-bold text-base" id="asset-modal-title">Tambah Aset Alih</h3>
+                <button onclick="closeAssetModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="asset-form" onsubmit="saveAsset(event)" class="p-6 space-y-4 overflow-y-auto">
+                <input type="hidden" id="asset-id">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan Aset / Nama Item <span class="text-rose-500">*</span></label>
+                    <textarea id="asset-name" required rows="2" placeholder="Cth: KOMPUTER/KOMPUTER MEJA/DESKTOP/LENOVO THINKCENTRE V530 (S/N: PC1K2WJP)" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none font-sans uppercase"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">No. Siri Pendaftaran <span class="text-rose-500">*</span></label>
+                    <input type="text" id="asset-serial" required placeholder="Cth: KPM/JPNSAR/YEE4101/H/25/11" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono uppercase">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Lokasi / Bilik <span class="text-rose-500">*</span></label>
+                        <select id="asset-room-id" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tarikh Penempatan <span class="text-rose-500">*</span></label>
+                        <input type="text" id="asset-date" required placeholder="DD/MM/YYYY (Cth: 25/06/2026)" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Kuantiti Unit</label>
+                        <input type="number" id="asset-qty" min="1" value="1" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Keadaan Aset</label>
+                        <select id="asset-status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="Baik">Baik</option>
+                            <option value="Rosak">Rosak</option>
+                            <option value="Dalam Pelupusan">Dalam Pelupusan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-2 shrink-0 border-t border-slate-100">
+                    <button type="button" onclick="closeAssetModal()" class="px-4 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow">Simpan Aset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- School Settings Modal -->
+    <div id="school-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div class="p-5 bg-slate-900 text-white flex justify-between items-center">
+                <h3 class="font-bold text-base">Maklumat Sekolah & Pegawai Aset</h3>
+                <button onclick="closeSchoolModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="school-form" onsubmit="saveSchoolInfo(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Sekolah / Bahagian <span class="text-rose-500">*</span></label>
+                    <input type="text" id="school-name-input" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none uppercase">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Jabatan / Kementerian</label>
+                    <input type="text" id="school-dept-input" placeholder="Jabatan Pendidikan Negeri Sarawak" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div class="pt-2 border-t border-slate-100">
+                    <p class="text-xs font-bold text-slate-800 mb-2">(a) Disediakan oleh (Pegawai Aset / Wakil):</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pegawai Aset</label>
+                            <input type="text" id="school-asset-officer" placeholder="Cth: JERNI BIN ZAINI" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none uppercase">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Jawatan Pegawai Aset</label>
+                            <input type="text" id="school-asset-officer-title" placeholder="Cth: PEGAWAI PERKHIDMATAN PENDIDIKAN" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none uppercase">
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4 flex justify-end gap-2">
+                    <button type="button" onclick="closeSchoolModal()" class="px-4 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow">Kemaskini</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg border border-slate-700 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3 z-50 pointer-events-none">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-message" class="text-xs font-medium">Mesej berjaya</span>
+    </div>
+
+    <script>
+        // Data Structures
+        let appState = {
+            school: {
+                name: "SMK LUTONG MIRI",
+                shortName: "SMK LUTONG",
+                department: "Jabatan Pendidikan Negeri Sarawak",
+                assetOfficer: "JERNI BIN ZAINI",
+                assetOfficerTitle: "PEGAWAI PERKHIDMATAN PENDIDIKAN"
+            },
+            rooms: [],
+            assets: []
+        };
+
+        // Initialize Application
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLocalData();
+            if (appState.rooms.length === 0) {
+                initSampleData();
+            }
+            updateSchoolHeader();
+            renderDashboard();
+            renderRooms();
+            renderAssetsTable();
+            populateRoomDropdowns();
+            generateKEWPA7Preview();
+        });
+
+        // Save State to Local Storage
+        function saveLocalData() {
+            try {
+                localStorage.setItem('kewpa7_app_state_v2', JSON.stringify(appState));
+            } catch (e) {
+                console.error("Local Storage error:", e);
+            }
+        }
+
+        // Load State from Local Storage
+        function loadLocalData() {
+            const saved = localStorage.getItem('kewpa7_app_state_v2');
+            if (saved) {
+                try {
+                    appState = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Failed to parse saved state", e);
+                }
+            }
+        }
+
+        // Sample Data Initialization (Matches Example PDF)
+        function initSampleData() {
+            appState.school = {
+                name: "SMK LUTONG MIRI",
+                shortName: "SMK LUTONG",
+                department: "Jabatan Pendidikan Negeri Sarawak",
+                assetOfficer: "JERNI BIN ZAINI",
+                assetOfficerTitle: "PEGAWAI PERKHIDMATAN PENDIDIKAN"
+            };
+
+            appState.rooms = [
+                {
+                    id: "room-1",
+                    name: "BILIK PENGETUA",
+                    code: "131409/BGN/NX/01/010",
+                    building: "Blok Pentadbiran, Aras 1",
+                    officerName: "CECILLIA JAU",
+                    officerTitle: "PEMBANTU MAKMAL"
+                },
+                {
+                    id: "room-2",
+                    name: "BILIK GURU UTAMA",
+                    code: "131409/BGN/NX/01/012",
+                    building: "Blok A, Aras 2",
+                    officerName: "AHMAD BIN MUSA",
+                    officerTitle: "PENGERUSI KELAB GURU"
+                }
+            ];
+
+            appState.assets = [
+                {
+                    id: "asset-1",
+                    roomId: "room-1",
+                    name: "KOMPUTER/KOMPUTER MEJA/DESKTOP/LENOVO THINKCENTRE V530 (S/N: PC1K2WJP)",
+                    serial: "KPM/JPNSAR/YEE4101/H/25/11",
+                    dateAdded: "25/06/2026",
+                    qty: 1,
+                    status: "Baik"
+                },
+                {
+                    id: "asset-2",
+                    roomId: "room-1",
+                    name: "KABINET/KABINET SERBAGUNA/AGB",
+                    serial: "KPM/JPNSAR/YEE4101/H/24/45",
+                    dateAdded: "25/06/2026",
+                    qty: 1,
+                    status: "Baik"
+                }
+            ];
+
+            saveLocalData();
+        }
+
+        function loadSampleData() {
+            if (confirm("Isi semula data dengan contoh rasmi KEW.PA-7 SMK LUTONG MIRI? Data sedia ada akan dikemaskini.")) {
+                initSampleData();
+                updateSchoolHeader();
+                renderDashboard();
+                renderRooms();
+                renderAssetsTable();
+                populateRoomDropdowns();
+                generateKEWPA7Preview();
+                showToast("Data contoh KEW.PA-7 berjaya dimuatkan!");
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-600', 'hover:bg-slate-200');
+            });
+
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+
+            if (targetTab && targetBtn) {
+                targetTab.classList.remove('hidden');
+                targetBtn.classList.remove('text-slate-600', 'hover:bg-slate-200');
+                targetBtn.classList.add('bg-brand-600', 'text-white', 'shadow-sm');
+            }
+
+            if (tabId === 'kewpa7') {
+                generateKEWPA7Preview();
+            }
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            const icon = document.getElementById('toast-icon');
+
+            msgEl.textContent = message;
+            if (isError) {
+                icon.className = "fa-solid fa-circle-exclamation text-rose-400";
+            } else {
+                icon.className = "fa-solid fa-circle-check text-emerald-400";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function updateSchoolHeader() {
+            document.getElementById('schoolNameHeader').textContent = appState.school.name || "SMK LUTONG MIRI";
+        }
+
+        function renderDashboard() {
+            document.getElementById('stat-total-rooms').textContent = appState.rooms.length;
+            document.getElementById('stat-total-assets').textContent = appState.assets.length;
+            
+            const totalQty = appState.assets.reduce((sum, item) => sum + (parseInt(item.qty) || 1), 0);
+            document.getElementById('stat-total-qty').textContent = totalQty;
+
+            const activeRoomIds = new Set(appState.assets.map(a => a.roomId));
+            document.getElementById('stat-active-rooms').textContent = activeRoomIds.size;
+
+            // Room Summary Table
+            const tbody = document.getElementById('dashboard-room-table-body');
+            if (appState.rooms.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">Tiada rekod bilik dijumpai.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = appState.rooms.map(room => {
+                const roomAssets = appState.assets.filter(a => a.roomId === room.id);
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-4 py-3 font-semibold text-slate-800">
+                            ${room.name}
+                            ${room.building ? `<div class="text-xs font-normal text-slate-400">${room.building}</div>` : ''}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-600">
+                            ${room.code || '-'}
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="text-slate-800 font-medium">${room.officerName || '-'}</div>
+                            <div class="text-xs text-slate-400">${room.officerTitle || ''}</div>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">${roomAssets.length}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <button onclick="viewRoomKEWPA7('${room.id}')" class="bg-brand-50 hover:bg-brand-100 text-brand-700 px-3 py-1 rounded-md text-xs font-semibold transition border border-brand-200">
+                                <i class="fa-solid fa-file-invoice mr-1"></i> Jana KEW.PA-7
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderRooms() {
+            const grid = document.getElementById('rooms-grid');
+            if (appState.rooms.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+                        <i class="fa-solid fa-door-closed text-4xl text-slate-300 mb-2"></i>
+                        <p class="text-slate-500 font-medium text-sm">Sila tambah bilik/lokasi sekolah anda.</p>
+                        <button onclick="openRoomModal()" class="mt-3 bg-brand-600 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow hover:bg-brand-700">
+                            Tambah Bilik Sekarang
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = appState.rooms.map(room => {
+                const roomAssets = appState.assets.filter(a => a.roomId === room.id);
+
+                return `
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between hover:shadow-md transition">
+                        <div>
+                            <div class="flex items-start justify-between">
+                                <div class="w-10 h-10 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center font-bold text-lg mb-3">
+                                    <i class="fa-solid fa-door-open"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <button onclick="editRoom('${room.id}')" class="text-slate-400 hover:text-brand-600 p-1.5 rounded-lg hover:bg-slate-100"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="deleteRoom('${room.id}')" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-slate-100"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-base leading-snug uppercase">${room.name}</h3>
+                            <p class="text-xs font-mono text-slate-500 mt-1"><i class="fa-solid fa-barcode text-slate-400 mr-1"></i>Kod: ${room.code || 'Tiada Kod'}</p>
+                            
+                            <div class="mt-4 pt-3 border-t border-slate-100">
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">(b) Pegawai Disahkan (Lokasi)</p>
+                                <p class="text-xs font-semibold text-slate-700 mt-0.5 uppercase">${room.officerName || '-'}</p>
+                                <p class="text-[11px] text-slate-500 uppercase">${room.officerTitle || '-'}</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                            <span class="text-slate-500 font-medium">${roomAssets.length} Item Aset</span>
+                            <button onclick="viewRoomKEWPA7('${room.id}')" class="text-brand-600 font-bold hover:underline">
+                                Lihat KEW.PA-7 &rarr;
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openRoomModal(roomId = null) {
+            const modal = document.getElementById('room-modal');
+            const title = document.getElementById('room-modal-title');
+            document.getElementById('room-form').reset();
+            document.getElementById('room-id').value = '';
+
+            if (roomId) {
+                const room = appState.rooms.find(r => r.id === roomId);
+                if (room) {
+                    title.textContent = 'Kemas Kini Bilik';
+                    document.getElementById('room-id').value = room.id;
+                    document.getElementById('room-name').value = room.name;
+                    document.getElementById('room-code').value = room.code || '';
+                    document.getElementById('room-building').value = room.building || '';
+                    document.getElementById('room-officer-name').value = room.officerName || '';
+                    document.getElementById('room-officer-title').value = room.officerTitle || '';
+                }
+            } else {
+                title.textContent = 'Tambah Bilik / Lokasi Baru';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeRoomModal() {
+            document.getElementById('room-modal').classList.add('hidden');
+        }
+
+        function saveRoom(e) {
+            e.preventDefault();
+            const id = document.getElementById('room-id').value;
+            const name = document.getElementById('room-name').value.trim().toUpperCase();
+            const code = document.getElementById('room-code').value.trim();
+            const building = document.getElementById('room-building').value.trim();
+            const officerName = document.getElementById('room-officer-name').value.trim().toUpperCase();
+            const officerTitle = document.getElementById('room-officer-title').value.trim().toUpperCase();
+
+            if (id) {
+                const room = appState.rooms.find(r => r.id === id);
+                if (room) {
+                    room.name = name;
+                    room.code = code;
+                    room.building = building;
+                    room.officerName = officerName;
+                    room.officerTitle = officerTitle;
+                }
+            } else {
+                const newRoom = {
+                    id: 'room-' + Date.now(),
+                    name,
+                    code,
+                    building,
+                    officerName,
+                    officerTitle
+                };
+                appState.rooms.push(newRoom);
+            }
+
+            saveLocalData();
+            closeRoomModal();
+            renderDashboard();
+            renderRooms();
+            populateRoomDropdowns();
+            showToast('Maklumat bilik berjaya disimpan');
+        }
+
+        function editRoom(id) {
+            openRoomModal(id);
+        }
+
+        function deleteRoom(id) {
+            if (confirm("Adakah anda pasti mahu memadamkan bilik ini? Semua pautan aset pada bilik ini akan turut dikemaskini.")) {
+                appState.rooms = appState.rooms.filter(r => r.id !== id);
+                appState.assets = appState.assets.filter(a => a.roomId !== id);
+                saveLocalData();
+                renderDashboard();
+                renderRooms();
+                renderAssetsTable();
+                populateRoomDropdowns();
+                showToast('Bilik berjaya dipadamkan');
+            }
+        }
+
+        function populateRoomDropdowns() {
+            const assetSelect = document.getElementById('asset-room-id');
+            const filterSelect = document.getElementById('asset-room-filter');
+            const kewpaSelect = document.getElementById('kewpa-room-select');
+
+            const roomOptionsHtml = appState.rooms.map(r => `<option value="${r.id}">${r.name} ${r.code ? `(${r.code})` : ''}</option>`).join('');
+
+            if (assetSelect) assetSelect.innerHTML = roomOptionsHtml || '<option value="">-- Sila Tambah Bilik Dahulu --</option>';
+            if (filterSelect) {
+                const currentVal = filterSelect.value;
+                filterSelect.innerHTML = '<option value="">-- Semua Bilik --</option>' + roomOptionsHtml;
+                filterSelect.value = currentVal;
+            }
+            if (kewpaSelect) {
+                const currentVal = kewpaSelect.value;
+                kewpaSelect.innerHTML = roomOptionsHtml || '<option value="">-- Tiada Bilik Didaftarkan --</option>';
+                if (currentVal && appState.rooms.some(r => r.id === currentVal)) {
+                    kewpaSelect.value = currentVal;
+                }
+            }
+        }
+
+        function renderAssetsTable() {
+            const tbody = document.getElementById('assets-table-body');
+            const searchQuery = (document.getElementById('asset-search-input').value || '').toLowerCase();
+            const roomFilter = document.getElementById('asset-room-filter').value;
+
+            let filteredAssets = appState.assets.filter(asset => {
+                const room = appState.rooms.find(r => r.id === asset.roomId);
+                const roomName = room ? room.name.toLowerCase() : '';
+                const nameMatch = asset.name.toLowerCase().includes(searchQuery);
+                const serialMatch = (asset.serial || '').toLowerCase().includes(searchQuery);
+                const roomMatch = roomName.includes(searchQuery);
+
+                const matchesSearch = nameMatch || serialMatch || roomMatch;
+                const matchesRoom = !roomFilter || asset.roomId === roomFilter;
+
+                return matchesSearch && matchesRoom;
+            });
+
+            if (filteredAssets.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">Tiada item aset dijumpai.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filteredAssets.map((asset, index) => {
+                const room = appState.rooms.find(r => r.id === asset.roomId);
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-4 py-3 text-xs text-slate-400 font-mono">${index + 1}</td>
+                        <td class="px-4 py-3 text-xs font-mono text-slate-800 font-bold uppercase">
+                            ${asset.serial || '-'}
+                        </td>
+                        <td class="px-4 py-3 text-slate-800 font-medium uppercase text-xs">
+                            ${asset.name}
+                        </td>
+                        <td class="px-4 py-3 text-slate-700">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 border border-slate-200">
+                                <i class="fa-solid fa-door-open text-slate-400 text-[10px]"></i>
+                                ${room ? room.name : '<span class="text-rose-500">Bilik Dipadam</span>'}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-center text-xs font-medium text-slate-700">
+                            ${asset.dateAdded || '-'}
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex items-center justify-end space-x-2">
+                                <button onclick="editAsset('${asset.id}')" class="text-slate-400 hover:text-brand-600 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="deleteAsset('${asset.id}')" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openAssetModal(assetId = null) {
+            if (appState.rooms.length === 0) {
+                alert("Sila tambah sekurang-kurangnya satu Bilik/Lokasi sebelum mendaftar aset.");
+                switchTab('rooms');
+                return;
+            }
+
+            const modal = document.getElementById('asset-modal');
+            const title = document.getElementById('asset-modal-title');
+            document.getElementById('asset-form').reset();
+            document.getElementById('asset-id').value = '';
+
+            populateRoomDropdowns();
+
+            // Default date to today's date formatted as DD/MM/YYYY
+            const today = new Date();
+            const dateStr = String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear();
+            document.getElementById('asset-date').value = dateStr;
+
+            if (assetId) {
+                const asset = appState.assets.find(a => a.id === assetId);
+                if (asset) {
+                    title.textContent = 'Kemas Kini Aset';
+                    document.getElementById('asset-id').value = asset.id;
+                    document.getElementById('asset-name').value = asset.name;
+                    document.getElementById('asset-serial').value = asset.serial || '';
+                    document.getElementById('asset-room-id').value = asset.roomId;
+                    document.getElementById('asset-date').value = asset.dateAdded || dateStr;
+                    document.getElementById('asset-qty').value = asset.qty || 1;
+                    document.getElementById('asset-status').value = asset.status || 'Baik';
+                }
+            } else {
+                title.textContent = 'Tambah Aset Baru';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeAssetModal() {
+            document.getElementById('asset-modal').classList.add('hidden');
+        }
+
+        function saveAsset(e) {
+            e.preventDefault();
+            const id = document.getElementById('asset-id').value;
+            const name = document.getElementById('asset-name').value.trim().toUpperCase();
+            const serial = document.getElementById('asset-serial').value.trim().toUpperCase();
+            const roomId = document.getElementById('asset-room-id').value;
+            const dateAdded = document.getElementById('asset-date').value.trim();
+            const qty = parseInt(document.getElementById('asset-qty').value) || 1;
+            const status = document.getElementById('asset-status').value;
+
+            if (id) {
+                const asset = appState.assets.find(a => a.id === id);
+                if (asset) {
+                    asset.name = name;
+                    asset.serial = serial;
+                    asset.roomId = roomId;
+                    asset.dateAdded = dateAdded;
+                    asset.qty = qty;
+                    asset.status = status;
+                }
+            } else {
+                const newAsset = {
+                    id: 'asset-' + Date.now(),
+                    name,
+                    serial,
+                    roomId,
+                    dateAdded,
+                    qty,
+                    status
+                };
+                appState.assets.push(newAsset);
+            }
+
+            saveLocalData();
+            closeAssetModal();
+            renderDashboard();
+            renderAssetsTable();
+            showToast('Aset berjaya disimpan');
+        }
+
+        function editAsset(id) {
+            openAssetModal(id);
+        }
+
+        function deleteAsset(id) {
+            if (confirm("Adakah anda pasti mahu memadamkan item aset ini?")) {
+                appState.assets = appState.assets.filter(a => a.id !== id);
+                saveLocalData();
+                renderDashboard();
+                renderAssetsTable();
+                showToast('Aset berjaya dipadamkan');
+            }
+        }
+
+        function viewRoomKEWPA7(roomId) {
+            switchTab('kewpa7');
+            const select = document.getElementById('kewpa-room-select');
+            if (select) {
+                select.value = roomId;
+                generateKEWPA7Preview();
+            }
+        }
+
+        function generateKEWPA7Preview() {
+            const roomId = document.getElementById('kewpa-room-select').value;
+            const room = appState.rooms.find(r => r.id === roomId);
+            const container = document.getElementById('kewpa7-preview-container');
+            const printArea = document.getElementById('kewpa7-print-area');
+
+            if (!room) {
+                const emptyHtml = `<div class="text-center py-12 text-slate-500 font-sans">Sila pilih bilik untuk menjana Borang KEW.PA-7.</div>`;
+                container.innerHTML = emptyHtml;
+                printArea.innerHTML = emptyHtml;
+                return;
+            }
+
+            const roomAssets = appState.assets.filter(a => a.roomId === room.id);
+
+            // Construct KEW.PA-7 Official Template HTML (Matching Provided PDF Layout)
+            let rowsHtml = '';
+            if (roomAssets.length === 0) {
+                rowsHtml = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 15px; font-style: italic;">
+                            Tiada aset alih diumpukkan di lokasi ini.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                rowsHtml = roomAssets.map((asset, index) => `
+                    <tr>
+                        <td style="text-align: center; vertical-align: top; padding: 6px 4px;">${index + 1}</td>
+                        <td style="vertical-align: top; font-family: monospace; font-size: 10pt; padding: 6px 8px;">
+                            ${asset.serial || '-'}
+                        </td>
+                        <td style="vertical-align: top; padding: 6px 8px; text-transform: uppercase;">
+                            ${asset.name}
+                        </td>
+                        <td style="text-align: center; vertical-align: top; padding: 6px 8px;">
+                            ${asset.dateAdded || '-'}
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Current date string format for officer verification
+            const today = new Date();
+            const formattedToday = String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear();
+
+            const formHtml = `
+                <div style="font-family: 'Times New Roman', Times, serif; font-size: 11pt; color: #000; line-height: 1.35;">
+                    
+                    <!-- Department Header & Title -->
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <div style="font-weight: bold; font-size: 11pt; text-transform: uppercase; margin-bottom: 2px;">
+                            ${appState.school.department || 'Jabatan Pendidikan Negeri Sarawak'}
+                        </div>
+                        <div style="font-weight: bold; font-size: 13pt; text-transform: uppercase; margin-bottom: 2px;">
+                            Senarai Aset Alih
+                        </div>
+                        <div style="font-weight: bold; font-size: 12pt; text-transform: uppercase;">
+                            KEW.PA-7
+                        </div>
+                    </div>
+
+                    <!-- Header Information Table -->
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 11pt;">
+                        <tr>
+                            <td style="width: 18%; font-weight: normal; padding: 3px 0;">Bahagian</td>
+                            <td style="width: 2%;">:</td>
+                            <td style="width: 80%; font-weight: bold; text-transform: uppercase;">${appState.school.shortName || appState.school.name}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: normal; padding: 3px 0;">Lokasi</td>
+                            <td>:</td>
+                            <td style="font-weight: bold; text-transform: uppercase;">${room.name}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: normal; padding: 3px 0;">Kod Lokasi</td>
+                            <td>:</td>
+                            <td style="font-weight: bold; font-family: monospace;">${room.code || '-'}</td>
+                        </tr>
+                    </table>
+
+                    <!-- Asset Main Table -->
+                    <table class="kewpa-table" style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 10.5pt; border: 1px solid #000;">
+                        <thead>
+                            <tr style="text-align: left; background-color: #fafafa;">
+                                <th style="width: 6%; text-align: center; font-weight: bold;">Bil.</th>
+                                <th style="width: 32%; text-align: left; font-weight: bold;">No Siri Pendaftaran</th>
+                                <th style="width: 47%; text-align: left; font-weight: bold;">Keterangan Aset</th>
+                                <th style="width: 15%; text-align: center; font-weight: bold;">Tarikh Penempatan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+
+                    <!-- Signatures Section -->
+                    <div style="display: flex; justify-content: space-between; page-break-inside: avoid; margin-top: 15px;">
+                        
+                        <!-- Left Block: (a) Disediakan oleh -->
+                        <div style="width: 48%;">
+                            <p style="font-weight: bold; margin-bottom: 35px;">a) Disediakan oleh:</p>
+                            <table style="width: 100%; font-size: 10.5pt; border-collapse: collapse;">
+                                <tr>
+                                    <td style="width: 28%; padding: 2px 0;">Tandatangan</td>
+                                    <td style="width: 5%;">:</td>
+                                    <td>........................................</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 0;">Nama</td>
+                                    <td>:</td>
+                                    <td style="font-weight: bold; text-transform: uppercase;">${appState.school.assetOfficer || '........................................'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 0;">Jawatan</td>
+                                    <td>:</td>
+                                    <td style="text-transform: uppercase;">${appState.school.assetOfficerTitle || '........................................'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 0;">Tarikh</td>
+                                    <td>:</td>
+                                    <td>........................................</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Right Block: (b) Disahkan oleh -->
+                        <div style="width: 48%;">
+                            <p style="font-weight: bold; margin-bottom: 35px;">b) Disahkan oleh:</p>
+                            <table style="width: 100%; font-size: 10.5pt; border-collapse: collapse;">
+                                <tr>
+                                    <td style="width: 28%; padding: 2px 0;">Tandatangan</td>
+                                    <td style="width: 5%;">:</td>
+                                    <td>........................................</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 0;">Nama</td>
+                                    <td>:</td>
+                                    <td style="font-weight: bold; text-transform: uppercase;">${room.officerName || '........................................'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 0;">Jawatan</td>
+                                    <td>:</td>
+                                    <td style="text-transform: uppercase;">${room.officerTitle || '........................................'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 0;">Tarikh</td>
+                                    <td>:</td>
+                                    <td>${formattedToday}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Official Footer Notes -->
+                    <div style="margin-top: 30px; font-size: 8.5pt; border-top: 1px solid #888; padding-top: 8px; color: #111; line-height: 1.3;">
+                        <p style="font-weight: bold; margin-bottom: 3px;">Nota</p>
+                        <p>a) Disediakan oleh Pegawai Aset atau wakilnya (contoh: Pembantu Tadbir Aset/lain-lain jawatan)</p>
+                        <p>b) Pegawai yang mengesahkan ialah pegawai yang bertanggungjawab ke atas aset berkenaan contohnya :</p>
+                        <p style="padding-left: 15px;">i) Lokasi bilik Setiausaha Bahagian disahkan oleh Setiausaha Bahagian.</p>
+                        <p style="padding-left: 15px;">ii) Lokasi bilik mesyuarat - disahkan oleh pegawai yang menguruskan bilik mesyuarat</p>
+                        <p>c) Dikemaskini apabila terdapat perubahan lokasi atau pegawai bertanggungjawab</p>
+                    </div>
+
+                </div>
+            `;
+
+            container.innerHTML = formHtml;
+            printArea.innerHTML = formHtml;
+        }
+
+        function openSchoolModal() {
+            document.getElementById('school-name-input').value = appState.school.name || '';
+            document.getElementById('school-dept-input').value = appState.school.department || '';
+            document.getElementById('school-asset-officer').value = appState.school.assetOfficer || '';
+            document.getElementById('school-asset-officer-title').value = appState.school.assetOfficerTitle || '';
+            document.getElementById('school-modal').classList.remove('hidden');
+        }
+
+        function closeSchoolModal() {
+            document.getElementById('school-modal').classList.add('hidden');
+        }
+
+        function saveSchoolInfo(e) {
+            e.preventDefault();
+            appState.school.name = document.getElementById('school-name-input').value.trim().toUpperCase();
+            
+            // Extract short name if applicable (e.g. SMK LUTONG MIRI -> SMK LUTONG)
+            if (appState.school.name.includes("MIRI")) {
+                appState.school.shortName = appState.school.name.replace(" MIRI", "").trim();
+            } else {
+                appState.school.shortName = appState.school.name;
+            }
+
+            appState.school.department = document.getElementById('school-dept-input').value.trim();
+            appState.school.assetOfficer = document.getElementById('school-asset-officer').value.trim().toUpperCase();
+            appState.school.assetOfficerTitle = document.getElementById('school-asset-officer-title').value.trim().toUpperCase();
+
+            saveLocalData();
+            closeSchoolModal();
+            updateSchoolHeader();
+            generateKEWPA7Preview();
+            showToast('Maklumat sekolah dikemas kini');
+        }
+
+        function exportDataJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Backup_KEWPA7_${appState.school.name.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("Fail sandaran JSON berjaya dimuat turun!");
+        }
+
+        function importDataJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed && parsed.rooms && parsed.assets) {
+                        appState = parsed;
+                        saveLocalData();
+                        updateSchoolHeader();
+                        renderDashboard();
+                        renderRooms();
+                        renderAssetsTable();
+                        populateRoomDropdowns();
+                        generateKEWPA7Preview();
+                        showToast("Data berjaya diimport!");
+                    } else {
+                        alert("Format fail JSON tidak sah.");
+                    }
+                } catch (err) {
+                    alert("Ralat membaca fail JSON.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (confirm("ADAKAH ANDA PASTI? Ini akan memadamkan SEMUA rekod bilik, aset dan tetapan sekolah secara kekal.")) {
+                appState = {
+                    school: {
+                        name: "SMK LUTONG MIRI",
+                        shortName: "SMK LUTONG",
+                        department: "Jabatan Pendidikan Negeri Sarawak",
+                        assetOfficer: "",
+                        assetOfficerTitle: ""
+                    },
+                    rooms: [],
+                    assets: []
+                };
+                saveLocalData();
+                updateSchoolHeader();
+                renderDashboard();
+                renderRooms();
+                renderAssetsTable();
+                populateRoomDropdowns();
+                generateKEWPA7Preview();
+                showToast("Semua data telah dikosongkan", true);
+            }
+        }
+    </script>
+</body>
+</html>
